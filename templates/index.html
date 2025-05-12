@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hill Cipher Encryption & Decryption</title>
+  <style>
+    /* Reset and base styles */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f6f9fc 0%, #eef1f5 100%);
+        padding: 1rem;
+        color: #333;
+        line-height: 1.6;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #1a202c;
+        font-size: 2.8rem;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        position: relative;
+        padding-bottom: 1rem;
+    }
+
+    h2::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(90deg, #4f46e5, #3c366b);
+        border-radius: 2px;
+    }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    }
+
+    .section-title {
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(to right, rgba(79, 70, 229, 0.1), transparent);
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .section-title::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: linear-gradient(to bottom, #4f46e5, #3c366b);
+        border-radius: 2px;
+    }
+
+    .section-title span {
+        font-size: 1.8rem;
+        margin-right: 0.5rem;
+    }
+
+    /* Different colors for encryption and decryption */
+    .card:first-child .section-title {
+        background: linear-gradient(to right, rgba(79, 70, 229, 0.1), transparent);
+    }
+
+    .card:first-child .section-title::before {
+        background: linear-gradient(to bottom, #4f46e5, #3c366b);
+    }
+
+    .card:last-child .section-title {
+        background: linear-gradient(to right, rgba(34, 197, 94, 0.1), transparent);
+    }
+
+    .card:last-child .section-title::before {
+        background: linear-gradient(to bottom, #22c55e, #166534);
+    }
+
+    input,
+    textarea {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.3s ease;
+    }
+
+    input:focus,
+    textarea:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    button {
+        width: 100%;
+        background: linear-gradient(135deg, #4f46e5 0%, #3c366b 100%);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    button:hover {
+        background: linear-gradient(135deg, #4338ca 0%, #312e81 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .result {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 500;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+        word-break: break-all;
+    }
+
+    .error-text {
+        color: #dc2626;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+    }
+
+    .success-text {
+        color: #059669;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+    }
+
+    footer {
+        text-align: center;
+        margin-top: 3rem;
+        color: #64748b;
+        font-size: 0.9rem;
+        padding: 1rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        h2 {
+            font-size: 2.2rem;
+        }
+        h2::after {
+            width: 80px;
+        }
+
+        .card {
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            padding: 0.4rem 0.8rem;
+        }
+        
+        .section-title span {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        body {
+            padding: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            padding-bottom: 0.8rem;
+        }
+        h2::after {
+            width: 60px;
+            height: 3px;
+        }
+
+        .card {
+            padding: 1rem;
+        }
+
+        input,
+        textarea,
+        button {
+            padding: 0.75rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            padding: 0.3rem 0.6rem;
+        }
+        
+        .section-title span {
+            font-size: 1.3rem;
+        }
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Hill Cipher Tool</h2>
+        
+        <div class="cards-container">
+            <div class="card">
+                <div class="section-title">
+                    <span>🔐</span>
+                    Encryption
+                </div>
+                <input type="text" id="plaintext" placeholder="Enter plaintext (only letters)" />
+                <input type="number" id="matrixSizeEncrypt" min="2" max="5" value="3" placeholder="Enter matrix size (2-5)" />
+                <textarea id="matrixEncrypt" rows="3" placeholder="Enter key matrix row by row (e.g., 6 24 1&#10;13 16 10&#10;20 17 15)"></textarea>
+                <button onclick="encrypt()">Encrypt</button>
+                <div class="result" id="cipherResult"></div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span>🔓</span>
+                    Decryption
+                </div>
+                <input type="text" id="ciphertext" placeholder="Enter ciphertext" />
+                <input type="number" id="matrixSizeDecrypt" min="2" max="5" value="3" placeholder="Enter matrix size (2-5)" />
+                <textarea id="matrixDecrypt" rows="3" placeholder="Enter key matrix for decryption (same format)"></textarea>
+                <button onclick="decrypt()">Decrypt</button>
+                <div class="result" id="plainResult"></div>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2025 Hill Cipher App. Built for educational use.
+        </footer>
+    </div>
+
+    <script>
+    function isSquareMatrix(matrix, size) {
+        if (matrix.length !== size) return false;
+        return matrix.every(row => row.length === size);
+    }
+
+    function validateMatrix(matrix, size, resultElement) {
+        if (!isSquareMatrix(matrix, size)) {
+            resultElement.innerText = `Error: Please enter a valid ${size}x${size} square matrix`;
+            resultElement.style.color = '#dc2626';  // red color for error
+            return false;
+        }
+        return true;
+    }
+
+    async function encrypt() {
+        const plaintext = document.getElementById('plaintext').value;
+        const matrixSize = parseInt(document.getElementById('matrixSizeEncrypt').value);
+        const resultElement = document.getElementById('cipherResult');
+        
+        try {
+            const matrixText = document.getElementById('matrixEncrypt').value
+                .trim()
+                .split('\n')
+                .map(row => row.trim().split(/\s+/).map(Number));
+
+            if (!validateMatrix(matrixText, matrixSize, resultElement)) {
+                return;
+            }
+
+            const response = await fetch('/encrypt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plaintext, matrix: matrixText })
+            });
+
+            const result = await response.json();
+            
+            if (result.error) {
+                resultElement.innerText = `Error: ${result.error}`;
+                resultElement.style.color = '#dc2626';
+            } else {
+                resultElement.innerText = `Ciphertext: ${result.ciphertext}`;
+                resultElement.style.color = '#059669';  // green color for success
+            }
+        } catch (error) {
+            resultElement.innerText = 'Error: Invalid matrix format';
+            resultElement.style.color = '#dc2626';
+        }
+    }
+
+    async function decrypt() {
+        const ciphertext = document.getElementById('ciphertext').value;
+        const matrixSize = parseInt(document.getElementById('matrixSizeDecrypt').value);
+        const resultElement = document.getElementById('plainResult');
+
+        try {
+            const matrixText = document.getElementById('matrixDecrypt').value
+                .trim()
+                .split('\n')
+                .map(row => row.trim().split(/\s+/).map(Number));
+
+            if (!validateMatrix(matrixText, matrixSize, resultElement)) {
+                return;
+            }
+
+            const response = await fetch('/decrypt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ciphertext, matrix: matrixText })
+            });
+
+            const result = await response.json();
+
+            if (result.error) {
+                resultElement.innerText = `Error: ${result.error}`;
+                resultElement.style.color = '#dc2626';
+            } else {
+                resultElement.innerText = `Plaintext: ${result.plaintext}`;
+                resultElement.style.color = '#059669';
+            }
+        } catch (error) {
+            resultElement.innerText = 'Error: Invalid matrix format';
+            resultElement.style.color = '#dc2626';
+        }
+    }
+  </script>
+</body>
+</html>
